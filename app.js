@@ -36,6 +36,9 @@ app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 //adicionar CSS
 app.use('/css', express.static('./css'))
 
+// referenciar a pasta de imagens
+app.use('/imagens', express.static('./imagens'));
+
 //configuração do express-handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
