@@ -15,15 +15,19 @@
     {{!-- listagem de produtos --}}
     <div class="container">
         <div class="row">
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            {{#each produtos}}
+                   <div class="col- col-sm-6 col-md-4 col-lg-3">
                 <div class="card">
-                    <img src="../imagens/01.jpeg">
-                    <p>Camisa</p>
-                    <p>$R 20,00</p>
-                    <a href="#" class="btn btn-warning">Alterar</a>
-                    <a href="#" class="btn btn-danger">Remover</a>
+                    <img src="../imagens/{{imagem}}">
+                    <div class="textos">
+                        <p>{{nome}}</p>
+                        <p>R${{valor}}</p>
+                    </div>
+                    <a href="/formularioEditar/{{codigo}}" class="btn btn-warning">Alterar</a>
+                    <a href="/remover/{{codigo}}&{{imagem}}" class="btn btn-danger">Remover</a>
                 </div>
             </div>
+            {{/each}}
         </div>
     </div>
 </main>

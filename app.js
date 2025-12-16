@@ -12,6 +12,10 @@ const { engine } = require('express-handlebars');
 //Importar módulo mysql
 const mysql = require('mysql2');
 
+
+//file Systems
+const fs = require('fs');
+
 //configuração de conexão com o banco de dados
 const conexão = mysql.createConnection({
     host: 'localhost',
@@ -34,7 +38,7 @@ app.use(fileupload());
 //Adicionar Bootstrap
 app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 //adicionar CSS
-app.use('/css', express.static('./css'))
+app.use('/css', express.static('./css'));
 
 // referenciar a pasta de imagens
 app.use('/imagens', express.static('./imagens'));
@@ -48,7 +52,7 @@ app.set('views', './views');
 //Manipulação de dados por rotas
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: false }));
 
 //Rota Principal
 app.get('/', (req, res) => {
@@ -60,8 +64,8 @@ app.get('/', (req, res) => {
         if (erro) throw erro;
 
         //Renderizar a página com os produtos
-        res.render('formulario', { produtos: retorno })
-    })
+        res.render('formulario', { produtos: retorno });
+    });
 });
 
 
@@ -82,12 +86,43 @@ app.post('/cadastrar', (req, res) => {
         if (erro) throw erro;
 
         //caso ocorra o cadastro
-        req.files.imagem.mv(__dirname + '/imagens/' + req.files.imagem.name)
-        console.log(retorno)
+        req.files.imagem.mv(__dirname + '/imagens/' + req.files.imagem.name);
+        console.log(retorno);
+    });
+
+    res.redirect('/');
+});
+
+// Rota para remover produtos
+
+app.get('/remover/:codigo&:imagem', (req, res) => {
+    let sql = `DELETE FROM produtos WHERE codigo = ${req.params.codigo}`;
+
+    conexão.query(sql, (erro, retorno) => {
+        if (erro) throw erro;
+
+        fs.unlink(__dirname + '/imagens/' + req.params.imagem, (erro) => {
+            if (erro) throw erro;
+        });
+
+    });
+
+    res.redirect('/');
+});
+
+
+//Rota para redirecionar para o formulario de alteração/edição
+app.get('/formularioEditar/:codigo', (req, res) => {
+
+    let sql = `SELECT * FROM produtos WHERE codigo = ${req.params.codigo}`;
+
+    //Executar o SQL
+    conexão.query(sql, (erro, retorno) => {
+        if (erro) throw erro;
+
+        //caso consiga rexecutar o comando SQL
+        res.render('formularioEditar', { produto: retorno[0] });
     })
-
-    res.redirect('/')
 })
-
 //Servidor
 app.listen(8080);
