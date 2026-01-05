@@ -44,7 +44,15 @@ app.use('/css', express.static('./css'));
 app.use('/imagens', express.static('./imagens'));
 
 //configuração do express-handlebars
-app.engine('handlebars', engine());
+app.engine('handlebars', engine({
+    helpers: {
+        // Função auxiliar para verificar igualdade
+        condicionalIgualdade: function (parametro1, parametro2, options) {
+            return parametro1 === parametro2 ? options.fn(this) : options.inverse(this);
+        }
+    }
+}));
+
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
@@ -55,7 +63,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 //Rota Principal
-app.get('/:situacao', (req, res) => {
+app.get('/', (req, res) => {
     //SQL para selecionar os produtos
     let sql = 'SELECT * FROM produtos';
 
@@ -63,8 +71,8 @@ app.get('/:situacao', (req, res) => {
     conexão.query(sql, (erro, retorno) => {
         if (erro) throw erro;
 
-        //Renderizar a página com os produtos
-        res.render('formulario', { produtos: retorno, situacao: req.params.situacao });
+        //Renderizar a página com os produtos (recebe situacao via query string ?situacao=...)
+        res.render('formulario', { produtos: retorno, situacao: req.query.situacao });
     });
 });
 
@@ -78,7 +86,7 @@ app.post('/cadastrar', (req, res) => {
         let imagem = req.files.imagem.name;
 
         if (nome == '' || isNaN(valor) || valor == '') {
-            res.redirect('/falhaCadastro');
+            res.redirect('/?situacao=falhaCadastro');
         } else {
             //SQL
             let sql = `INSERT INTO produtos (nome, valor, imagem) VALUES ('${nome}', ${valor}, '${imagem}')`;
@@ -92,27 +100,31 @@ app.post('/cadastrar', (req, res) => {
                 console.log(retorno);
             });
 
-            res.redirect('/okCadastro');
+            res.redirect('/?situacao=okCadastro');
         }
     } catch (erro) {
-        res.redirect('/falhaCadastro')
+        res.redirect('/?situacao=falhaCadastro')
     }
 });
 
 // Rota para remover produtos
 
 app.get('/remover/:codigo&:imagem', (req, res) => {
-    let sql = `DELETE FROM produtos WHERE codigo = ${req.params.codigo}`;
+    try {
+        let sql = `DELETE FROM produtos WHERE codigo = ${req.params.codigo}`;
 
-    conexão.query(sql, (erro, retorno) => {
-        if (erro) throw erro;
-
-        fs.unlink(__dirname + '/imagens/' + req.params.imagem, (erro) => {
+        conexão.query(sql, (erro, retorno) => {
             if (erro) throw erro;
-        });
-    });
 
-    res.redirect('/');
+            fs.unlink(__dirname + '/imagens/' + req.params.imagem, (erro) => {
+                console.log('Erro ao remover imagem:');
+            });
+        });
+        //Redirecionamento
+        res.redirect('/?situacao=okRemover');
+    } catch (erro) {
+        res.redirect('/?situacao=falhaRemover');
+    }
 });
 
 //Rota para redirecionar para o formulario de alteração/edição
@@ -131,7 +143,7 @@ app.get('/formularioEditar/:codigo', (req, res) => {
 
 //Rota para edição/atualização de produtos
 app.post('/editar', (req, res) => {
-    //obter os dados d formulario
+    //obter os dados do formulario
     let nome = req.body.nome;
     let valor = req.body.valor;
     let codigo = req.body.codigo;
@@ -139,7 +151,7 @@ app.post('/editar', (req, res) => {
 
     //validar nome do produto e valor
     if (nome == '' || isNaN(valor) || valor == '') {
-        res.redirect('/falhaEdicao');
+        res.redirect('/?situacao=falhaEdicao');
         return;
     } else {
         try {
@@ -172,7 +184,7 @@ app.post('/editar', (req, res) => {
 
         }
 
-        res.redirect('/');
+        res.redirect('/?situacao=okEdicao');
     }
 
     //definir  o tipo de edicão
