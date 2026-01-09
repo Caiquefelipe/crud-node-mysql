@@ -38,6 +38,7 @@ app.use(fileupload());
 //Adicionar Bootstrap
 app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 //adicionar CSS
+
 app.use('/css', express.static('./css'));
 
 // referenciar a pasta de imagens
@@ -166,6 +167,7 @@ app.post('/editar', (req, res) => {
 
                 //Remover imagem antiga
                 fs.unlink(__dirname + '/imagens/' + nomeImagem, (erro_imagem) => {
+
                     if (erro_imagem) console.log('Erro ao remover imagem antiga:' + erro.message)
                 });
 

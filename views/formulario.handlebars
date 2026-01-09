@@ -1,36 +1,50 @@
 
 <main>
+    <!-- Modal de Confirmação - Bootstrap -->
+    <div class="modal fade" id="modalRemover" tabindex="-1" aria-labelledby="modalRemoverLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-gradient border-0 shadow-lg">
+                <div class="modal-header border-0 bg-danger bg-opacity-10">
+                    <h5 class="modal-title w-100 text-center text-danger fw-bold" id="modalRemoverLabel">⚠️ Remover Produto</h5>
+                    <button type="button" class="btn-close" onclick="fecharModal()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="fs-6 text-muted">Deseja realmente remover esse produto?</p>
+                    <p class="text-danger fw-bold">Essa ação não pode ser desfeita</p>
+                </div>
+                <div class="modal-footer border-0 d-flex gap-2 justify-content-center pb-4">
+                    <button type="button" class="btn btn-secondary px-4" onclick="fecharModal()">Cancelar</button>
+                    <button type="button" class="btn btn-danger px-4" onclick="confirmarRemocao()">Remover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let urlRemover = '';
+
+        function abrirModalRemover(codigo, imagem) {
+            urlRemover = `/remover/${codigo}&${imagem}`;
+            const modal = new bootstrap.Modal(document.getElementById('modalRemover'));
+            modal.show();
+        }
+
+        function fecharModal() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRemover'));
+            modal.hide();
+        }
+
+        function confirmarRemocao() {
+            window.location.href = urlRemover;
+        }
+    </script>
+
     <div class="container">
         <div class="row">
             <div class="col-6 offset-3">
 
                 {{!-- mensagens --}}
-
-                {{#condicionalIgualdade situacao 'okCadastro'}}
-                    <div class="alert alert-success">Produto cadastrado com sucesso</div>
-                {{/condicionalIgualdade }}
-
-                  {{#condicionalIgualdade situacao 'okEdicao'}}
-                    <div class="alert alert-success">Produto editado com sucesso</div>
-                {{/condicionalIgualdade }}
-                
-                  {{#condicionalIgualdade situacao 'okRemover'}}
-                    <div class="alert alert-success">Produto removido com sucesso</div>
-                {{/condicionalIgualdade }}
-
-
-                
-                {{#condicionalIgualdade situacao 'falhaCadastro'}}
-                    <div class="alert alert-danger">Falha ao cadastrar o produto, tente novamente.</div>
-                {{/condicionalIgualdade }}
-
-                  {{#condicionalIgualdade situacao 'falhaEdicao'}}
-                    <div class="alert alert-danger">Falha ao editar o produto, tente novamente.</div>
-                {{/condicionalIgualdade }}
-                
-                  {{#condicionalIgualdade situacao 'falhaRemover'}}
-                    <div class="alert alert-danger">Falha ao remover o produto, tente novamente.</div>
-                {{/condicionalIgualdade }}
+                {{>mensagens}}
                 <form action="cadastrar" method="post" enctype="multipart/form-data">
                     <input type="text"   name="nome" class="form-control"placeholder="Nome do produto">
                     <input type="number" name="valor" class="form-control"placeholder="Valor do produto">
@@ -52,7 +66,7 @@
                         <p>R${{valor}}</p>
                     </div>
                     <a href="/formularioEditar/{{codigo}}" class="btn btn-warning">Alterar</a>
-                    <a href="/remover/{{codigo}}&{{imagem}}" class="btn btn-danger">Remover</a>
+                    <a href="javascript:void(0)" class="btn btn-danger" onclick="abrirModalRemover('{{codigo}}', '{{imagem}}')">Remover</a>
                 </div>
             </div>
             {{/each}}
